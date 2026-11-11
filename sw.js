@@ -1,4 +1,4 @@
-/* sw.js — 自製導航 v3.9 PWA */
+/* sw.js — 自製導航 v3.10.4 PWA */
 'use strict';
 
 const VERSION = 'nav-v3.10.4';
@@ -33,13 +33,17 @@ function isNetworkOnly(url) {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then((cache) => cache.addAll(SHELL_ASSETS.map(u => new Request(u, { cache: 'reload' }))))
-      .catch((err) => {
-        // 個別 CDN 失敗不要讓整個 install 失敗；至少本檔可離線
-        console.warn('[SW] shell precache partial failure', err);
-      })
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      // 逐項快取：單一 CDN 失敗不會拖垮整個 shell
+      await Promise.allSettled(
+        SHELL_ASSETS.map(u =>
+          cache.add(new Request(u, { cache: 'reload' }))
+            .catch(err => console.warn('[SW] precache failed:', u, err && err.message))
+        )
+      );
+      await self.skipWaiting();
+    })()
   );
 });
 
@@ -61,7 +65,6 @@ self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// 只允許同源導覽請求被快取回退
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -104,20 +107,22 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         try {
-          // no-cache：繞過 GitHub Pages 的 HTTP 快取(max-age=600)，每次向伺服器驗證最新 HTML
           const res = await fetch(req, { cache: 'no-cache' });
           if (res && res.ok) {
             const cache = await caches.open(SHELL_CACHE);
+            // 同時寫入實際 URL 與 index.html，避免路徑變體拿到舊檔
+            cache.put(req, res.clone()).catch(() => {});
             cache.put('./index.html', res.clone()).catch(() => {});
           }
           return res;
         } catch (e) {
           const cache = await caches.open(SHELL_CACHE);
-          return (await cache.match('./index.html')) ||
-            new Response('離線中，且尚未快取導航頁面', {
-              status: 503,
-              headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-            });
+          return (await cache.match(req)) ||
+                 (await cache.match('./index.html')) ||
+                 new Response('離線中，且尚未快取導航頁面', {
+                   status: 503,
+                   headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                 });
         }
       })()
     );
