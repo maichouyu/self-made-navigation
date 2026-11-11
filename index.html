@@ -8558,7 +8558,7 @@ function navSetIdleFollow(enabled){
     return remember(prior?Object.assign({},prior,p,{searchVerified:true}):p);
   };
   // No network geocoding fallback can silently turn unselected text into a route.
-  geocode=function(text){return Promise.resolve(parseNavCoordinates(String(text||'').trim()));};
+  //geocode=function(text){return Promise.resolve(parseNavCoordinates(String(text||'').trim()));};
   var originalStart=resolveStart;
   resolveStart=function(){return $('useCurrent').checked?originalStart():Promise.resolve(chosen($('startInput')));};
   resolveEnd=function(){return Promise.resolve(validNavPoint(manualDest)?manualDest:chosen($('endInput')));};
