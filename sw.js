@@ -1,7 +1,7 @@
 /* sw.js — 自製導航 v3.9 PWA */
 'use strict';
 
-const VERSION = 'nav-v3.9.1';
+const VERSION = 'nav-v3.10.4';
 const SHELL_CACHE = `${VERSION}-shell`;
 const TILE_CACHE = `${VERSION}-tiles`;
 const MAX_TILE_ENTRIES = 600;
