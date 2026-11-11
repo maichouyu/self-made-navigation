@@ -9018,20 +9018,32 @@ function navSetIdleFollow(enabled){
   if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
 
   var swReg = null;
-  var reloading = false;
+var reloading = false;
 
-  function showUpdateToast(worker) {
-    var t = document.getElementById('toast');
-    if (!t) { if (confirm('有新版本，是否立即重新載入？')) worker.postMessage('SKIP_WAITING'); return; }
-    t.style.display = 'block';
-    t.textContent = '有新版本，點一下重新載入';
-    t.classList.add('show');
-    t.style.pointerEvents = 'auto';
-    t.style.cursor = 'pointer';
-    t.onclick = function () {
-      worker.postMessage('SKIP_WAITING');
-    };
-  }
+// 清除上一輪 update toast 殘留的點擊行為，避免導航中被一般 toast 誤觸 reload
+function resetToastInteraction() {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.onclick = null;
+  t.style.pointerEvents = '';
+  t.style.cursor = '';
+}
+
+function showUpdateToast(worker) {
+  var t = document.getElementById('toast');
+  if (!t) { if (confirm('有新版本，是否立即重新載入？')) worker.postMessage('SKIP_WAITING'); return; }
+  t.style.display = 'block';
+  t.textContent = '有新版本，點一下重新載入';
+  t.classList.add('show');
+  t.style.pointerEvents = 'auto';
+  t.style.cursor = 'pointer';
+  t.onclick = function () {
+    t.onclick = null;
+    t.style.pointerEvents = '';
+    t.style.cursor = '';
+    worker.postMessage('SKIP_WAITING');
+  };
+}
 
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('./sw.js', { scope: './' })
@@ -9053,10 +9065,11 @@ function navSetIdleFollow(enabled){
       .catch(function (e) { console.warn('[PWA] SW register failed', e); });
 
     navigator.serviceWorker.addEventListener('controllerchange', function () {
-      if (reloading) return;
-      reloading = true;
-      location.reload();
-    });
+  resetToastInteraction();
+  if (reloading) return;
+  reloading = true;
+  location.reload();
+});
 
     setInterval(function () { if (swReg) swReg.update().catch(function () {}); }, 60 * 60 * 1000);
   });
