@@ -1,26 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<!--
+v3.9
+1.導航時地圖不會一卡一卡，改為平滑移動地圖
+-->
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>自製導航 v3.9 · 導航地圖平滑化</title>
 
-  <head>
-    <meta charset="UTF-8">
-    <title>自製導航v3.9</title>
+  <!-- PWA 設定 -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#101010" />
+  <meta name="application-name" content="自製導航" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="自製導航" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
 
-    <!-- PWA -->
-<link rel="manifest" href="./manifest.webmanifest" />
-<meta name="theme-color" content="#101010" />
-<meta name="application-name" content="自製導航" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="自製導航" />
-<link rel="apple-touch-icon" href="./icons/icon-192.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
-    
-
-  </head>
-    
-  <body>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
   <!doctype html>
 <!--
 v3.9
@@ -8604,7 +8615,7 @@ function navSetIdleFollow(enabled){
   window.navPlaceSearch={search:function(id,full){return search(states.get($(id)),!!full);},chosen:chosen};
 })();
 
-  <!-- PWA: Service Worker 註冊 + 更新提示 -->
+<!-- PWA: Service Worker 註冊 + 更新提示 -->
 <script>
 (function () {
   'use strict';
@@ -8652,21 +8663,14 @@ function navSetIdleFollow(enabled){
       location.reload();
     });
 
-    // 每 60 分鐘檢查一次更新
     setInterval(function () { if (swReg) swReg.update().catch(function () {}); }, 60 * 60 * 1000);
   });
 
-  // 離線提示（可選）：連線恢復時給個 toast
   window.addEventListener('offline', function () {
     if (typeof toast === 'function') toast('目前離線：地圖圖磚可能無法載入');
   });
 })();
 </script>
-  
-</script>
+
 </body>
-</html>
-    
-  </body>
-  
 </html>
