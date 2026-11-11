@@ -1,15 +1,18 @@
 {
-  "id": "/self-made-navigation/",
+  "id": "./",
   "name": "自製導航 v3.10.4",
   "short_name": "自製導航",
   "description": "自製導航：路線規劃、沿途路況、天氣與帳號同步",
   "lang": "zh-Hant",
-  "start_url": "/index.html",
-  "scope": "/",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#101010",
   "theme_color": "#101010",
+  "categories": ["navigation", "travel", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icons/icon-192.png",
