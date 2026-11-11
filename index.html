@@ -4,6 +4,18 @@
   <head>
     <meta charset="UTF-8">
     <title>自製導航v3.9</title>
+
+    <!-- PWA -->
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#101010" />
+<meta name="application-name" content="自製導航" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="自製導航" />
+<link rel="apple-touch-icon" href="./icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
     
 
   </head>
@@ -8592,6 +8604,65 @@ function navSetIdleFollow(enabled){
   window.navPlaceSearch={search:function(id,full){return search(states.get($(id)),!!full);},chosen:chosen};
 })();
 
+  <!-- PWA: Service Worker 註冊 + 更新提示 -->
+<script>
+(function () {
+  'use strict';
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+
+  var swReg = null;
+  var reloading = false;
+
+  function showUpdateToast(worker) {
+    var t = document.getElementById('toast');
+    if (!t) { if (confirm('有新版本，是否立即重新載入？')) worker.postMessage('SKIP_WAITING'); return; }
+    t.style.display = 'block';
+    t.textContent = '有新版本，點一下重新載入';
+    t.classList.add('show');
+    t.style.pointerEvents = 'auto';
+    t.style.cursor = 'pointer';
+    t.onclick = function () {
+      worker.postMessage('SKIP_WAITING');
+    };
+  }
+
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(function (reg) {
+        swReg = reg;
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          showUpdateToast(reg.waiting);
+        }
+        reg.addEventListener('updatefound', function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', function () {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateToast(nw);
+            }
+          });
+        });
+      })
+      .catch(function (e) { console.warn('[PWA] SW register failed', e); });
+
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloading) return;
+      reloading = true;
+      location.reload();
+    });
+
+    // 每 60 分鐘檢查一次更新
+    setInterval(function () { if (swReg) swReg.update().catch(function () {}); }, 60 * 60 * 1000);
+  });
+
+  // 離線提示（可選）：連線恢復時給個 toast
+  window.addEventListener('offline', function () {
+    if (typeof toast === 'function') toast('目前離線：地圖圖磚可能無法載入');
+  });
+})();
+</script>
+  
 </script>
 </body>
 </html>
